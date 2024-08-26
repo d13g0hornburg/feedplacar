@@ -6,11 +6,14 @@ class Placar extends Component {
     this.state = {
       pontosA: 0,
       pontosB: 0,
-      hora: '00:00:00'
+      hora: '00:00:00',
+      iniciado: false // Novo estado para controlar se o placar está ativo
     };
   }
 
-  componentDidMount() {
+  iniciarPlacar = () => {
+    this.setState({ iniciado: true });
+
     this.relogioId = setInterval(() => {
       this.setState({ hora: new Date().toLocaleTimeString() });
     }, 1000);
@@ -26,21 +29,18 @@ class Placar extends Component {
         pontosB: prevState.pontosB + 1
       }));
     }, 90000);
-  }
+  };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.hora !== this.state.hora) {
-      console.log('Atualizou Hora');
-    }
-    if (prevState.pontosA !== this.state.pontosA || prevState.pontosB !== this.state.pontosB) {
-      console.log('Atualizou Times!');
-    }
-  }
+  pararPlacar = () => {
+    this.setState({ iniciado: false });
+    this.componentWillUnmount();
+  };
 
   componentWillUnmount() {
     clearInterval(this.relogioId);
     clearInterval(this.intervalA);
     clearInterval(this.intervalB);
+    console.log('Component desmontado e intervalos limpos');
   }
 
   render() {
@@ -84,17 +84,24 @@ class Placar extends Component {
     return (
       <div style={containerStyle}>
         <h1>Placar ao Vivo</h1>
-        <h1 style={relogioStyle}>HORA: {this.state.hora}</h1>
-        <div style={timeContainerStyle}>
-          <div style={timeAStyle}>
-            <h2>Time A</h2>
-            <p>{this.state.pontosA} pontos</p>
+        {this.state.iniciado ? (
+          <div>
+            <h1 style={relogioStyle}>HORA: {this.state.hora}</h1>
+            <div style={timeContainerStyle}>
+              <div style={timeAStyle}>
+                <h2>Time A</h2>
+                <p>{this.state.pontosA} pontos</p>
+              </div>
+              <div style={timeBStyle}>
+                <h2>Time B</h2>
+                <p>{this.state.pontosB} pontos</p>
+              </div>
+            </div>
+            <button onClick={this.pararPlacar}>Parar Placar</button>
           </div>
-          <div style={timeBStyle}>
-            <h2>Time B</h2>
-            <p>{this.state.pontosB} pontos</p>
-          </div>
-        </div>
+        ) : (
+          <button onClick={this.iniciarPlacar}>Iniciar Placar</button>
+        )}
       </div>
     );
   }
